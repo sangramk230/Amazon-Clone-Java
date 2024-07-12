@@ -59,13 +59,18 @@ public class LoginController {
 
 	@PutMapping("profileUpdate")
 	public ResponseEntity<Login> updateProfile(@RequestBody Login updatedUser) {
+		if (httpSession.getAttribute("loggedInAdmin") != null) {
 		Login updatedProfile = loginService.updateProfile(updatedUser);
 		return ResponseEntity.ok(updatedProfile);
+	}
+	return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 	}
 
 	@GetMapping("allUsers")
 	public ResponseEntity<List<Login>> allUser() {
+		if (httpSession.getAttribute("loggedInAdmin") != null) {
 		return new ResponseEntity<List<Login>>(loginService.allUser(), HttpStatus.OK);
-
+	}
+	return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 	}
 }

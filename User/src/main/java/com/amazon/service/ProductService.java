@@ -20,7 +20,7 @@ public class ProductService {
 	}
 
 	public Product addProductToCart(String email, Product product) {
-		return productDao.addProductToCart(email, product, 1);
+		return productDao.addProductToCart(email, product);
 	}
 
 	public List<Product> viewProductCart(String email) {
@@ -32,7 +32,7 @@ public class ProductService {
 	}
 
 	public Product addProductToBuy(String email, Product product) {
-		return productDao.addProductToBuy(email, product, 1);
+		return productDao.addProductToBuy(email, product);
 	}
 
 	public List<Product> viewProductBuy(String email) {

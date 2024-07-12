@@ -15,9 +15,14 @@ public class LoginService {
 	private LoginDao loginDao;
 
 	public boolean loginAdmin(String email, String password) {
-		Login admin = loginDao.getAdminByEmail(email);
-		return admin != null && admin.getPassword().equals(password);
+		List<Login> admins = loginDao.getAdminByEmail(email);
+		if (admins.isEmpty()) {
+			return false;
+		}
+		Login admin = admins.get(0);
+		return admin.getPassword().equals(password);
 	}
+
 
 	public List<Login> profileAdmin(String email) {
 

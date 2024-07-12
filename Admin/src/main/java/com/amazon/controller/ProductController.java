@@ -20,6 +20,8 @@ import com.amazon.entity.Categories;
 import com.amazon.entity.Product;
 import com.amazon.service.ProductService;
 
+import jakarta.servlet.http.HttpSession;
+
 @Controller
 @CrossOrigin("http://localhost:4201")
 @RequestMapping("api/admin")
@@ -29,7 +31,13 @@ public class ProductController {
 
 	@PostMapping("addProduct")
 	public ResponseEntity<Availableproduct> addProduct(@RequestBody Availableproduct availableproduct) {
-		return new ResponseEntity<Availableproduct>(productService.addProduct(availableproduct), HttpStatus.OK);
+		HttpSession session = LoginController.httpSession;
+		if (session != null) {
+			return new ResponseEntity<Availableproduct>(productService.addProduct(availableproduct), HttpStatus.OK);
+
+		} else {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
 	}
 
 	@GetMapping("viewProducts")

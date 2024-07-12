@@ -17,10 +17,11 @@ public class LoginDao {
     private SessionFactory sessionFactory;
 
 
-	public Login getAdminByEmail(String email) {
+	public List<Login> getAdminByEmail(String email) {
 		try (Session session = sessionFactory.openSession()) {
-			return session.createQuery("FROM Login WHERE email = :email AND role= 'Admin'", Login.class)
-					.uniqueResult();
+			Query<Login> query = session.createQuery("FROM Login WHERE email = : email AND role= 'Admin'", Login.class);
+			query.setParameter("email", email);
+					return query.list();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -30,7 +31,8 @@ public class LoginDao {
 
 	public List<Login> profileAdmin(String email) {
 		try (Session session = sessionFactory.openSession()) {
-			Query<Login> query = session.createQuery("FROM Login WHERE email = :email AND role='Admin'", Login.class);
+			Query<Login> query = session.createQuery("FROM Login WHERE email = : email AND role='Admin'", Login.class);
+			query.setParameter("email", email);
 			return query.list();
 		} catch (Exception e) {
 			e.printStackTrace();
