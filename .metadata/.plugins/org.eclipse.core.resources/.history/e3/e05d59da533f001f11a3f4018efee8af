@@ -1,0 +1,143 @@
+package com.amazon.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.amazon.entity.Availableproduct;
+import com.amazon.entity.Categories;
+import com.amazon.entity.Product;
+import com.amazon.service.ProductService;
+
+import jakarta.servlet.http.HttpSession;
+
+@Controller
+@CrossOrigin("http://localhost:4200")
+@RequestMapping("api/user")
+public class ProductController {
+	@Autowired
+	ProductService productService;
+
+	@GetMapping("allProduct")
+	public ResponseEntity<List<Availableproduct>> allProduct() {
+		return new ResponseEntity<>(productService.allProduct(), HttpStatus.OK);
+	}
+
+	@PostMapping("addToCart")
+	public ResponseEntity<Product> addProductToCart(@RequestBody Product crt) {
+		HttpSession session = LoginController.httpSession;
+		Product result = productService.addProductToCart(crt);
+		if (result != null) {
+			return new ResponseEntity<>(result, HttpStatus.OK);
+		} else {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@GetMapping("viewCart")
+	public ResponseEntity<List<Product>> viewCart() {
+		HttpSession session = LoginController.httpSession;
+		return new ResponseEntity<>(productService.viewProductCart(), HttpStatus.OK);
+
+	}
+
+	@DeleteMapping("delCartProductsById/{productid}")
+	public ResponseEntity<Boolean> delCartProductsById(@PathVariable Integer productid) {
+		HttpSession session = LoginController.httpSession;
+
+		boolean isDeleted = productService.delCartProductsById(productid);
+		if (isDeleted) {
+			return new ResponseEntity<>(true, HttpStatus.OK);
+		}
+		return new ResponseEntity<>(false, HttpStatus.NOT_FOUND);
+
+	}
+
+	@PostMapping("buyProduct")
+	public ResponseEntity<Product> addProductToBuy(@RequestBody Product crt) {
+		HttpSession session = LoginController.httpSession;
+
+		Product result = productService.addProductToBuy(crt);
+		if (result != null) {
+			return new ResponseEntity<>(result, HttpStatus.OK);
+		} else {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@GetMapping("viewOrder")
+	public ResponseEntity<List<Product>> viewBuy() {
+		return new ResponseEntity<>(productService.viewProductBuy(), HttpStatus.OK);
+
+	}
+
+	@DeleteMapping("delBuyProductsById/{productid}")
+	public ResponseEntity<Boolean> delBuyProductsById(@PathVariable Integer productid) {
+		boolean isDeleted = productService.delBuyProductsById(productid);
+		if (isDeleted) {
+			return new ResponseEntity<>(true, HttpStatus.OK);
+		} else {
+			return new ResponseEntity<>(false, HttpStatus.NOT_FOUND);
+		}
+	}
+
+	@GetMapping("viewProductsByCategory/{category}")
+	public ResponseEntity<List<Availableproduct>> viewProductsByCategory(@PathVariable String category) {
+		List<Availableproduct> products = productService.viewProductsByCategory(category);
+		return new ResponseEntity<>(products, HttpStatus.OK);
+	}
+
+	@GetMapping("viewCategory")
+	public ResponseEntity<List<Categories>> viewCategory() {
+		List<Categories> products = productService.viewCategory();
+		return new ResponseEntity<>(products, HttpStatus.OK);
+	}
+
+	@GetMapping("search/{name}")
+	public ResponseEntity<List> search(@PathVariable String name) {
+		System.out.println("cccc" + name);
+		return new ResponseEntity<List>(productService.search(name), HttpStatus.OK);
+	}
+
+	@PutMapping("updateCart")
+	public ResponseEntity<Product> updateCart(@RequestBody Product product) {
+		return new ResponseEntity<Product>(productService.updateCart(product), HttpStatus.OK);
+	}
+
+	@PostMapping("buyProducts")
+	public ResponseEntity<List<Product>> addProductsToBuy(@RequestBody List<Product> products) {
+		List<Product> result = productService.addProductsToBuy(products);
+		if (result != null && !result.isEmpty()) {
+			return new ResponseEntity<>(result, HttpStatus.OK);
+		} else {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@PutMapping("updateQuantity")
+	public ResponseEntity<Availableproduct> updateQuantity(@RequestBody Availableproduct av) {
+		System.out.println("Received Availableproduct: " + av);
+		System.out.println("Product ID: " + av.getProductid());
+		System.out.println("Quantity: " + av.getQuantity());
+
+		try {
+			Availableproduct updatedProduct = productService.updateQuantity(av.getProductid(), av.getQuantity());
+			return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
+		}
+	}
+
+}

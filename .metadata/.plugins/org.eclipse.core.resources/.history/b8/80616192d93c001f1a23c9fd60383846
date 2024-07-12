@@ -1,0 +1,48 @@
+package com.amazon.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.amazon.dao.ProductDao;
+import com.amazon.entity.Availableproduct;
+import com.amazon.entity.Categories;
+
+@Service
+public class ProductService {
+	@Autowired
+	ProductDao productDao;
+
+	public Availableproduct addProduct(Availableproduct availableproduct) {
+		return productDao.addProduct(availableproduct);
+
+	}
+
+	public List<Availableproduct> viewProduct() {
+		return productDao.viewProduct();
+	}
+
+	public Boolean delProduct(Long productid) {
+		return productDao.delProduct(productid);
+	}
+
+	public Availableproduct updateProdct(Availableproduct updatedProduct) {
+		return productDao.updateProdct(updatedProduct);
+	}
+	public Categories addCategories(Categories categories) {
+		productDao.addCategories(categories);
+	}
+
+	public void viewCategories(Availableproduct availableproduct) {
+		productDao.viewCategories(availableproduct);
+	}
+
+	public void approval(Availableproduct availableproduct) {
+		productDao.approval(availableproduct);
+	}
+
+	public void report(Availableproduct availableproduct) {
+		productDao.report(availableproduct);
+	}
+}

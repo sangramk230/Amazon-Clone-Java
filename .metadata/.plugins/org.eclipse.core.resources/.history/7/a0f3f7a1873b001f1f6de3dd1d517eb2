@@ -1,0 +1,6 @@
+package com.amazon.entity;
+
+public enum Role {
+
+	ADMI, User
+}

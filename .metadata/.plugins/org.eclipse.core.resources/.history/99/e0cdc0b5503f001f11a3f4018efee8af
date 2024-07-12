@@ -1,0 +1,228 @@
+package com.amazon.dao;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.query.Query;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.amazon.entity.Availableproduct;
+import com.amazon.entity.Categories;
+import com.amazon.entity.Product;
+
+@Repository
+public class ProductDao {
+    @Autowired
+    private SessionFactory sessionFactory;
+
+    public List<Availableproduct> allProduct() {
+        try (Session session = sessionFactory.openSession()) {
+            Query<Availableproduct> query = session.createQuery("FROM Availableproduct", Availableproduct.class);
+            return query.list();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public Product addProductToCart(Product product, String crt, String username) {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            product.setBuyorcart(crt);
+            product.setUsername(username);
+            session.save(product);
+            transaction.commit();
+            return product;
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public List<Product> viewProductCart(String buyorcart, String username) {
+        try (Session session = sessionFactory.openSession()) {
+            Query<Product> query = session.createQuery("FROM Product WHERE buyorcart = :buyorcart AND username = :username", Product.class);
+            query.setParameter("buyorcart", buyorcart);
+            query.setParameter("username", username);
+            return query.list();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public Boolean delCartProductsById(Integer productid, String buyorcart, String username) {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            Query<?> query = session.createQuery("DELETE FROM Product WHERE productid = :productid AND buyorcart = :buyorcart AND username = :username");
+            query.setParameter("productid", productid);
+            query.setParameter("buyorcart", buyorcart);
+            query.setParameter("username", username);
+            int result = query.executeUpdate();
+            transaction.commit();
+            return result > 0;
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public Product addProductToBuy(Product product, String crt, String username, String status) {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            product.setBuyorcart(crt);
+            product.setUsername(username);
+            product.setStatus(status);
+            session.save(product);
+            transaction.commit();
+            return product;
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public List<Product> viewProductBuy(String buyorcart, String username) {
+        try (Session session = sessionFactory.openSession()) {
+            Query<Product> query = session.createQuery("FROM Product WHERE buyorcart = :buyorcart AND username = :username", Product.class);
+            query.setParameter("buyorcart", buyorcart);
+            query.setParameter("username", username);
+            return query.list();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public Boolean delBuyProductsById(Integer productid, String buyorcart, String username) {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            Query<?> query = session.createQuery("DELETE FROM Product WHERE productid = :productid AND buyorcart = :buyorcart AND username = :username");
+            query.setParameter("productid", productid);
+            query.setParameter("buyorcart", buyorcart);
+            query.setParameter("username", username);
+            int result = query.executeUpdate();
+            transaction.commit();
+            return result > 0;
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public List<Availableproduct> viewProductsByCategory(String category) {
+        try (Session session = sessionFactory.openSession()) {
+            Query<Availableproduct> query = session.createQuery("FROM Availableproduct WHERE category = :category", Availableproduct.class);
+            query.setParameter("category", category);
+            return query.list();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public List<Categories> viewCategory() {
+        try (Session session = sessionFactory.openSession()) {
+            Query<Categories> query = session.createQuery("FROM Categories", Categories.class);
+            return query.list();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public List<Availableproduct> search(String name) {
+        try (Session session = sessionFactory.openSession()) {
+            Query<Availableproduct> query = session.createQuery("FROM Availableproduct WHERE name LIKE :name", Availableproduct.class);
+            query.setParameter("name", name + "%");
+            return query.list();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public Product updateCart(Product product, String username) {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            product.setUsername(username);
+            session.update(product);
+            transaction.commit();
+            return product;
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public List<Product> addProductsToBuy(List<Product> products, String category, String username) {
+        List<Product> savedProducts = new ArrayList<>();
+        for (Product product : products) {
+            product.setProductid((long) 2);
+            product.setBuyorcart(category);
+            product.setUsername(username);
+            savedProducts.add(save(product));
+        }
+        return savedProducts;
+    }
+
+    private Product save(Product product) {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            session.save(product);
+            transaction.commit();
+            return product;
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public Availableproduct updateQuantity(Long productid, Long quantity) {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            Query<?> query = session.createQuery("UPDATE Availableproduct SET quantity = :quantity WHERE productid = :productid");
+            query.setParameter("productid", productid);
+            query.setParameter("quantity", quantity);
+            int rowsUpdated = query.executeUpdate();
+            transaction.commit();
+            Availableproduct updatedProduct = session.get(Availableproduct.class, productid);
+            return updatedProduct;
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+            return null;
+        }
+    }
+}

@@ -1,0 +1,9 @@
+package com.amazon.entity;
+
+public class Categories {
+
+	public static void main(String[] args) {
+
+	}
+
+}

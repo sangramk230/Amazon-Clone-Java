@@ -1,0 +1,225 @@
+package com.amazon.dao;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.query.Query;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.amazon.entity.Availableproduct;
+import com.amazon.entity.Categories;
+import com.amazon.entity.Product;
+
+@Repository
+public class ProductDao {
+	@Autowired
+	private SessionFactory sessionFactory;
+
+	public List<Availableproduct> allProduct() {
+		try (Session session = sessionFactory.openSession()) {
+			Query<Availableproduct> query = session.createQuery("FROM Availableproduct", Availableproduct.class);
+			return query.list();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public Product addProductToCart(Product product, long no) {
+		Transaction transaction = null;
+		try (Session session = sessionFactory.openSession()) {
+			transaction = session.beginTransaction();
+			product.setBuyorcart("Cart");
+			product.setUserid(no);
+			session.save(product);
+			transaction.commit();
+			return product;
+		} catch (Exception e) {
+			if (transaction != null) {
+				transaction.rollback();
+			}
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public List<Product> viewProductCart() {
+		try (Session session = sessionFactory.openSession()) {
+			Query<Product> query = session.createQuery("FROM Product WHERE buyorcart = 'Cart'", Product.class);
+			return query.list();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public Boolean delCartProductsById(Integer productid) {
+		Transaction transaction = null;
+		try (Session session = sessionFactory.openSession()) {
+			transaction = session.beginTransaction();
+			Query<?> query = session
+					.createQuery("DELETE FROM Product a WHERE a.productid = :productid AND buyorcart = 'Cart' ");
+			query.setParameter("productid", productid);
+			int result = query.executeUpdate();
+			transaction.commit();
+			return result > 0;
+		} catch (Exception e) {
+			if (transaction != null) {
+				transaction.rollback();
+			}
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	public Product addProductToBuy(Product product, long no) {
+		Transaction transaction = null;
+		try (Session session = sessionFactory.openSession()) {
+			transaction = session.beginTransaction();
+			product.setBuyorcart("Buy");
+			product.setUserid(no);
+			product.setStatus("In Progress");
+			session.save(product);
+			transaction.commit();
+			return product;
+		} catch (Exception e) {
+			if (transaction != null) {
+				transaction.rollback();
+			}
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public List<Product> viewProductBuy() {
+		try (Session session = sessionFactory.openSession()) {
+			Query<Product> query = session.createQuery("FROM Product WHERE buyorcart = 'Buy' ", Product.class);
+			return query.list();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public Boolean delBuyProductsById(Integer productid) {
+		Transaction transaction = null;
+		try (Session session = sessionFactory.openSession()) {
+			transaction = session.beginTransaction();
+			Query<?> query = session
+					.createQuery("DELETE FROM Product a WHERE a.productid = :productid AND buyorcart= 'Buy'");
+			query.setParameter("productid", productid);
+			int result = query.executeUpdate();
+			transaction.commit();
+			return result > 0;
+		} catch (Exception e) {
+			if (transaction != null) {
+				transaction.rollback();
+			}
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	public List<Availableproduct> viewProductsByCategory(String category) {
+		try (Session session = sessionFactory.openSession()) {
+			Query<Availableproduct> query = session.createQuery("FROM Availableproduct WHERE category = :category",
+					Availableproduct.class);
+			query.setParameter("category", category);
+			return query.list();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public List<Categories> viewCategory() {
+		try (Session session = sessionFactory.openSession()) {
+			Query<Categories> query = session.createQuery("FROM Categories ", Categories.class);
+			return query.list();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public List search(String name) {
+		try (Session session = sessionFactory.openSession()) {
+			Query query = session.createQuery("from Availableproduct where name LIKE: name");
+			query.setParameter("name", name + "%");
+			return query.list();
+		}
+	}
+
+	public Product updateCart(Product product) {
+		Transaction transaction = null;
+		try (Session session = sessionFactory.openSession()) {
+			transaction = session.beginTransaction();
+			session.update(product);
+			transaction.commit();
+			return product;
+		} catch (Exception e) {
+			if (transaction != null) {
+				transaction.rollback();
+			}
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	private Product save(Product product) {
+		Transaction transaction = null;
+		try (Session session = sessionFactory.openSession()) {
+			transaction = session.beginTransaction();
+			session.save(product);
+			transaction.commit();
+			return product;
+		} catch (Exception e) {
+			if (transaction != null) {
+				transaction.rollback();
+			}
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public List<Product> addProductsToBuy(List<Product> products, String category) {
+		List<Product> savedProducts = new ArrayList<>();
+		for (Product product : products) {
+			product.setProductid((long) 2);
+			product.setBuyorcart(category);
+			savedProducts.add(save(product));
+		}
+		return savedProducts;
+	}
+
+	public Availableproduct updateQuantity(Long productid, Long quantity) {
+		Transaction transaction = null;
+		try (Session session = sessionFactory.openSession()) {
+			transaction = session.beginTransaction();
+
+			Query query = session
+					.createQuery("UPDATE Availableproduct SET quantity = :quantity WHERE productid = :productid");
+			query.setParameter("productid", productid);
+			query.setParameter("quantity", quantity);
+
+			int rowsUpdated = query.executeUpdate();
+			transaction.commit();
+
+			System.out.println("Rows affected: " + rowsUpdated);
+
+			Availableproduct updatedProduct = session.get(Availableproduct.class, productid);
+			return updatedProduct;
+		} catch (Exception e) {
+			if (transaction != null) {
+				transaction.rollback();
+			}
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+}
