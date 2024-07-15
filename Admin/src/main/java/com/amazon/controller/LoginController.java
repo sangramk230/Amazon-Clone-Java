@@ -45,6 +45,17 @@ public class LoginController {
 		}
 	}
 
+	@GetMapping("logout")
+	public ResponseEntity<String> logoutUser() {
+		HttpSession httpSession = LoginController.httpSession;
+		if (httpSession != null) {
+			httpSession.setAttribute("loggedInAdmin", null);
+			httpSession.invalidate();
+		}
+		return new ResponseEntity<>(null, HttpStatus.OK);
+	}
+
+
 	@GetMapping("profile")
 	public ResponseEntity<List<Login>> profile() {
 		if (httpSession.getAttribute("loggedInAdmin") != null) {

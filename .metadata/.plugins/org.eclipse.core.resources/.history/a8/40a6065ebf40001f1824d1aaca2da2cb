@@ -1,0 +1,133 @@
+package com.amazon.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.amazon.entity.Availableproduct;
+import com.amazon.entity.Categories;
+import com.amazon.entity.Product;
+import com.amazon.service.ProductService;
+
+import jakarta.servlet.http.HttpSession;
+
+@Controller
+@CrossOrigin("http://localhost:4201")
+@RequestMapping("api/admin")
+public class ProductController {
+	@Autowired
+	ProductService productService;
+
+	@PostMapping("addProduct")
+	public ResponseEntity<Availableproduct> addProduct(@RequestBody Availableproduct availableproduct) {
+		HttpSession session = LoginController.httpSession;
+		if (session != null) {
+			return new ResponseEntity<Availableproduct>(productService.addProduct(availableproduct), HttpStatus.OK);
+
+		} else {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+	}
+
+	@GetMapping("viewProducts")
+	public ResponseEntity<List<Availableproduct>> viewProduct() {
+		HttpSession session = LoginController.httpSession;
+		if (session != null) {
+			return new ResponseEntity<List<Availableproduct>>(productService.viewProduct(), HttpStatus.OK);
+
+		} else {
+			return new ResponseEntity<List<Availableproduct>>(HttpStatus.BAD_GATEWAY);
+
+		}
+	}
+
+	@DeleteMapping("delProduct/{productid}")
+	public ResponseEntity<Boolean> delProduct(@PathVariable Long productid) {
+		boolean deleted = productService.delProduct(productid);
+
+		if (deleted) {
+			return ResponseEntity.ok(true);
+		} else {
+			return ResponseEntity.ok(false);
+		}
+	}
+
+	@PutMapping("updateProduct")
+	public ResponseEntity<Availableproduct> updateProdct(@RequestBody Availableproduct updatedProduct) {
+		HttpSession session = LoginController.httpSession;
+		Availableproduct product = productService.updateProdct(updatedProduct);
+		if (session != null) {
+			return ResponseEntity.ok(product);
+
+		} else {
+			return null;
+		}
+	}
+
+	@PostMapping("addCategory")
+	public ResponseEntity<Categories> addCategories(@RequestBody Categories categories) {
+		return new ResponseEntity<>(productService.addCategories(categories), HttpStatus.OK);
+	}
+
+	@GetMapping("viewCategory")
+	public ResponseEntity<List<Categories>> viewCategories() {
+		HttpSession session = LoginController.httpSession;
+		if (session != null) {
+			return new ResponseEntity<List<Categories>>(productService.viewCategories(), HttpStatus.OK);
+
+		} else {
+			return new ResponseEntity<List<Categories>>(HttpStatus.BAD_GATEWAY);
+
+		}
+	}
+
+	@DeleteMapping("delCategory/{categoryid}")
+	public ResponseEntity<Boolean> delCategory(@PathVariable Long categoryid) {
+		HttpSession session = LoginController.httpSession;
+		boolean deleted = productService.delCategory(categoryid);
+
+		if (session != null && deleted) {
+			return ResponseEntity.ok(true);
+		} else {
+			return ResponseEntity.ok(false);
+		}
+	}
+
+	@GetMapping("approval")
+	public ResponseEntity<List<Product>> approval() {
+		HttpSession session = LoginController.httpSession;
+		if (session != null) {
+			return new ResponseEntity<List<Product>>(productService.approval(), HttpStatus.OK);
+		} else {
+			return new ResponseEntity<List<Product>>(HttpStatus.BAD_GATEWAY);
+
+		}
+	}
+
+	@PutMapping("actionOnApproval")
+	public ResponseEntity<Product> actionOnApproval(@RequestBody Product product) {
+		HttpSession session = LoginController.httpSession;
+		Product prod = productService.actionOnApproval(product);
+		if (session != null) {
+			return ResponseEntity.ok(product);
+
+		} else {
+
+		}
+	}
+
+	public void report(Availableproduct availableproduct) {
+		productService.report(availableproduct);
+	}
+}

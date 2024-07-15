@@ -26,8 +26,17 @@ import jakarta.servlet.http.HttpSession;
 @CrossOrigin("http://localhost:4200")
 @RequestMapping("api/user")
 public class ProductController {
+
 	@Autowired
-	ProductService productService;
+	private ProductService productService;
+
+	@Autowired
+	HttpSession httpSession;
+
+	private boolean isUserLoggedIn() {
+		httpSession = LoginController.httpSession;
+		return httpSession != null && httpSession.getAttribute("loggedInUser") != null;
+	}
 
 	@GetMapping("allProduct")
 	public ResponseEntity<List<Availableproduct>> allProduct() {
@@ -36,79 +45,60 @@ public class ProductController {
 
 	@PostMapping("addToCart")
 	public ResponseEntity<Product> addProductToCart(@RequestBody Product crt) {
-		HttpSession session = LoginController.httpSession;
-		if (session == null) {
+		if (!isUserLoggedIn()) {
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}
-		Product result = productService.addProductToCart((String) session.getAttribute("loggedInUser"), crt);
-		if (result != null) {
-			return new ResponseEntity<>(result, HttpStatus.OK);
-		} else {
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		Product result = productService.addProductToCart((String) httpSession.getAttribute("loggedInUser"), crt);
+		return result != null ? new ResponseEntity<>(result, HttpStatus.OK)
+				: new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
 	@GetMapping("viewCart")
 	public ResponseEntity<List<Product>> viewCart() {
-		HttpSession session = LoginController.httpSession;
-		if (session == null) {
+		if (!isUserLoggedIn()) {
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}
-		return new ResponseEntity<>(productService.viewProductCart((String) session.getAttribute("loggedInUser")),
+		return new ResponseEntity<>(productService.viewProductCart((String) httpSession.getAttribute("loggedInUser")),
 				HttpStatus.OK);
 	}
 
 	@DeleteMapping("delCartProductsById/{productid}")
 	public ResponseEntity<Boolean> delCartProductsById(@PathVariable Integer productid) {
-		HttpSession session = LoginController.httpSession;
-		if (session == null) {
+		if (!isUserLoggedIn()) {
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}
-		boolean isDeleted = productService.delCartProductsById((String) session.getAttribute("loggedInUser"),
+		boolean isDeleted = productService.delCartProductsById((String) httpSession.getAttribute("loggedInUser"),
 				productid);
-		if (isDeleted) {
-			return new ResponseEntity<>(true, HttpStatus.OK);
-		} else {
-			return new ResponseEntity<>(false, HttpStatus.NOT_FOUND);
-		}
+		return ResponseEntity.ok(isDeleted);
 	}
 
 	@PostMapping("buyProduct")
 	public ResponseEntity<Product> addProductToBuy(@RequestBody Product crt) {
-		HttpSession session = LoginController.httpSession;
-		if (session == null) {
+		if (!isUserLoggedIn()) {
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}
-		Product result = productService.addProductToBuy((String) session.getAttribute("loggedInUser"), crt);
-		if (result != null) {
-			return new ResponseEntity<>(result, HttpStatus.OK);
-		} else {
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		Product result = productService.addProductToBuy((String) httpSession.getAttribute("loggedInUser"), crt);
+		return result != null ? new ResponseEntity<>(result, HttpStatus.OK)
+				: new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
 	@GetMapping("viewOrder")
 	public ResponseEntity<List<Product>> viewBuy() {
-		HttpSession session = LoginController.httpSession;
-		if (session == null) {
+		if (!isUserLoggedIn()) {
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}
-		return new ResponseEntity<>(productService.viewProductBuy((String) session.getAttribute("loggedInUser")),
+		return new ResponseEntity<>(productService.viewProductBuy((String) httpSession.getAttribute("loggedInUser")),
 				HttpStatus.OK);
 	}
 
 	@DeleteMapping("delBuyProductsById/{productid}")
 	public ResponseEntity<Boolean> delBuyProductsById(@PathVariable Integer productid) {
-		HttpSession session = LoginController.httpSession;
-		if (session == null) {
+		if (!isUserLoggedIn()) {
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}
-		boolean isDeleted = productService.delBuyProductsById((String) session.getAttribute("loggedInUser"), productid);
-		if (isDeleted) {
-			return new ResponseEntity<>(true, HttpStatus.OK);
-		} else {
-			return new ResponseEntity<>(false, HttpStatus.NOT_FOUND);
-		}
+		boolean isDeleted = productService.delBuyProductsById((String) httpSession.getAttribute("loggedInUser"),
+				productid);
+		return ResponseEntity.ok(isDeleted);
 	}
 
 	@GetMapping("viewProductsByCategory/{category}")
@@ -118,7 +108,7 @@ public class ProductController {
 
 	@GetMapping("viewCategory")
 	public ResponseEntity<List<Categories>> viewCategory() {
-		return new ResponseEntity<>( productService.viewCategory(), HttpStatus.OK);
+		return new ResponseEntity<>(productService.viewCategory(), HttpStatus.OK);
 	}
 
 	@GetMapping("search/{name}")
@@ -128,25 +118,21 @@ public class ProductController {
 
 	@PutMapping("updateCart")
 	public ResponseEntity<Product> updateCart(@RequestBody Product product) {
-		HttpSession session = LoginController.httpSession;
-		if (session == null) {
+		if (!isUserLoggedIn()) {
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}
-		return new ResponseEntity<>(productService.updateCart((String) session.getAttribute("loggedInUser"), product),
-				HttpStatus.OK);
+		return new ResponseEntity<>(
+				productService.updateCart((String) httpSession.getAttribute("loggedInUser"), product), HttpStatus.OK);
 	}
 
 	@PostMapping("buyProducts")
 	public ResponseEntity<List<Product>> addProductsToBuy(@RequestBody List<Product> products) {
-		HttpSession session = LoginController.httpSession;
-		if (session == null) {
+		if (!isUserLoggedIn()) {
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}
-		List<Product> result = productService.addProductsToBuy((String) session.getAttribute("loggedInUser"), products);
-		if (result != null && !result.isEmpty()) {
-			return new ResponseEntity<>(result, HttpStatus.OK);
-		} else {
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		List<Product> result = productService.addProductsToBuy((String) httpSession.getAttribute("loggedInUser"),
+				products);
+		return result != null && !result.isEmpty() ? new ResponseEntity<>(result, HttpStatus.OK)
+				: new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 }

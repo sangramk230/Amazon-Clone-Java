@@ -26,40 +26,47 @@ import jakarta.servlet.http.HttpSession;
 @CrossOrigin("http://localhost:4201")
 @RequestMapping("api/admin")
 public class ProductController {
+
 	@Autowired
-	ProductService productService;
+	private ProductService productService;
+
+
+	private boolean isAdminLoggedIn() {
+		HttpSession httpSession = LoginController.httpSession;
+		return httpSession != null && httpSession.getAttribute("loggedInAdmin") != null;
+	}
 
 	@PostMapping("addProduct")
 	public ResponseEntity<Availableproduct> addProduct(@RequestBody Availableproduct availableproduct) {
-		HttpSession session = LoginController.httpSession;
-		if (session != null) {
-			return new ResponseEntity<Availableproduct>(productService.addProduct(availableproduct), HttpStatus.OK);
-
+		if (isAdminLoggedIn()) {
+			return new ResponseEntity<>(productService.addProduct(availableproduct), HttpStatus.OK);
 		} else {
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}
 	}
 
 	@GetMapping("viewProducts")
 	public ResponseEntity<List<Availableproduct>> viewProduct() {
-		return new ResponseEntity<List<Availableproduct>>(productService.viewProduct(), HttpStatus.OK);
+		if (isAdminLoggedIn()) {
+			return new ResponseEntity<>(productService.viewProduct(), HttpStatus.OK);
+		} else {
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+		}
 	}
 
 	@DeleteMapping("delProduct/{productid}")
 	public ResponseEntity<Boolean> delProduct(@PathVariable Long productid) {
 		boolean deleted = productService.delProduct(productid);
-
-		if (deleted) {
-			return ResponseEntity.ok(true);
-		} else {
-			return ResponseEntity.ok(false);
-		}
+		return ResponseEntity.ok(deleted);
 	}
 
 	@PutMapping("updateProduct")
-	public ResponseEntity<Availableproduct> updateProdct(@RequestBody Availableproduct updatedProduct) {
-		Availableproduct product = productService.updateProdct(updatedProduct);
-		return ResponseEntity.ok(product);
+	public ResponseEntity<Availableproduct> updateProduct(@RequestBody Availableproduct updatedProduct) {
+		if (isAdminLoggedIn()) {
+			return ResponseEntity.ok(productService.updateProdct(updatedProduct));
+		} else {
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+		}
 	}
 
 	@PostMapping("addCategory")
@@ -69,30 +76,39 @@ public class ProductController {
 
 	@GetMapping("viewCategory")
 	public ResponseEntity<List<Categories>> viewCategories() {
-
-		return new ResponseEntity<List<Categories>>(productService.viewCategories(), HttpStatus.OK);
+		if (isAdminLoggedIn()) {
+			return new ResponseEntity<>(productService.viewCategories(), HttpStatus.OK);
+		} else {
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+		}
 	}
 
 	@DeleteMapping("delCategory/{categoryid}")
 	public ResponseEntity<Boolean> delCategory(@PathVariable Long categoryid) {
-		boolean deleted = productService.delCategory(categoryid);
-
-		if (deleted) {
-			return ResponseEntity.ok(true);
+		if (isAdminLoggedIn()) {
+			boolean deleted = productService.delCategory(categoryid);
+			return ResponseEntity.ok(deleted);
 		} else {
-			return ResponseEntity.ok(false);
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}
 	}
 
 	@GetMapping("approval")
 	public ResponseEntity<List<Product>> approval() {
-		return new ResponseEntity<List<Product>>(productService.approval(), HttpStatus.OK);
+		if (isAdminLoggedIn()) {
+			return new ResponseEntity<>(productService.approval(), HttpStatus.OK);
+		} else {
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+		}
 	}
 
 	@PutMapping("actionOnApproval")
 	public ResponseEntity<Product> actionOnApproval(@RequestBody Product product) {
-		Product prod = productService.actionOnApproval(product);
-		return ResponseEntity.ok(product);
+		if (isAdminLoggedIn()) {
+			return ResponseEntity.ok(productService.actionOnApproval(product));
+		} else {
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+		}
 	}
 
 	public void report(Availableproduct availableproduct) {
